@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from copy import deepcopy
+import random
 
 class Cube(ABC):
     @property
@@ -69,6 +70,24 @@ class Cube(ABC):
             self._STATE_OF_CUBE[5][0][i] = ORIGINAL_STATE[1][i][-1]
             self._STATE_OF_CUBE[1][i][-1] = ORIGINAL_STATE[0][-1][self._SIZE_OF_CUBE - i - 1]
 
+    def _f_move_clockwise_internal(self, layer):
+        layer -= 1
+        ORIGINAL_STATE = deepcopy(self._STATE_OF_CUBE)
+        for i in range(self._SIZE_OF_CUBE):
+            self._STATE_OF_CUBE[0][-1 - layer][i] = ORIGINAL_STATE[1][self._SIZE_OF_CUBE - i - 1][-1 - layer]
+            self._STATE_OF_CUBE[1][i][-1 - layer] = ORIGINAL_STATE[5][layer][i]
+            self._STATE_OF_CUBE[3][i][layer] = ORIGINAL_STATE[0][-1 - layer][i]
+            self._STATE_OF_CUBE[5][layer][i] = ORIGINAL_STATE[3][self._SIZE_OF_CUBE - i - 1][layer]
+
+    def _f_move_anticlockwise_internal(self, layer):
+        layer -= 1
+        ORIGINAL_STATE = deepcopy(self._STATE_OF_CUBE)
+        for i in range(self._SIZE_OF_CUBE):
+            self._STATE_OF_CUBE[0][-1 - layer][i] = ORIGINAL_STATE[3][i][layer]
+            self._STATE_OF_CUBE[1][i][-1 - layer] = ORIGINAL_STATE[0][-1 - layer][self._SIZE_OF_CUBE - i - 1]
+            self._STATE_OF_CUBE[3][i][layer] = ORIGINAL_STATE[5][layer][self._SIZE_OF_CUBE - i - 1]
+            self._STATE_OF_CUBE[5][layer][i] = ORIGINAL_STATE[1][i][-1 - layer]
+
     def u(self, clockwise=True, layer=1):
         if layer > self._MAX_LAYER or layer <= 0:
             raise Exception("Invalid layer!")
@@ -94,6 +113,24 @@ class Cube(ABC):
             self._STATE_OF_CUBE[2][0][i] = ORIGINAL_STATE[1][0][i]
             self._STATE_OF_CUBE[3][0][i] = ORIGINAL_STATE[2][0][i]
             self._STATE_OF_CUBE[4][0][i] = ORIGINAL_STATE[3][0][i]
+
+    def _u_move_clockwise_internal(self, layer):
+        layer -= 1
+        ORIGINAL_STATE = deepcopy(self._STATE_OF_CUBE)
+        for i in range(self._SIZE_OF_CUBE):
+            self._STATE_OF_CUBE[1][layer][i] = ORIGINAL_STATE[2][layer][i]
+            self._STATE_OF_CUBE[2][layer][i] = ORIGINAL_STATE[3][layer][i]
+            self._STATE_OF_CUBE[3][layer][i] = ORIGINAL_STATE[4][layer][i]
+            self._STATE_OF_CUBE[4][layer][i] = ORIGINAL_STATE[1][layer][i]
+
+    def _u_move_anticlockwise_internal(self, layer):
+        layer -= 1
+        ORIGINAL_STATE = deepcopy(self._STATE_OF_CUBE)
+        for i in range(self._SIZE_OF_CUBE):
+            self._STATE_OF_CUBE[1][layer][i] = ORIGINAL_STATE[4][layer][i]
+            self._STATE_OF_CUBE[2][layer][i] = ORIGINAL_STATE[1][layer][i]
+            self._STATE_OF_CUBE[3][layer][i] = ORIGINAL_STATE[2][layer][i]
+            self._STATE_OF_CUBE[4][layer][i] = ORIGINAL_STATE[3][layer][i]
 
     def b(self, clockwise=True, layer=1):
         if layer > self._MAX_LAYER or layer <= 0:
@@ -121,6 +158,24 @@ class Cube(ABC):
             self._STATE_OF_CUBE[3][i][-1] = ORIGINAL_STATE[0][0][i]
             self._STATE_OF_CUBE[5][-1][i] = ORIGINAL_STATE[3][self._SIZE_OF_CUBE - i - 1][-1]
 
+    def _b_move_clockwise_internal(self, layer):
+        layer -= 1
+        ORIGINAL_STATE = deepcopy(self._STATE_OF_CUBE)
+        for i in range(self._SIZE_OF_CUBE):
+            self._STATE_OF_CUBE[0][layer][i] = ORIGINAL_STATE[3][i][-1 - layer]
+            self._STATE_OF_CUBE[1][i][layer] = ORIGINAL_STATE[0][layer][self._SIZE_OF_CUBE - i - 1]
+            self._STATE_OF_CUBE[3][i][-1 - layer] = ORIGINAL_STATE[5][-1 - layer][self._SIZE_OF_CUBE - i - 1]
+            self._STATE_OF_CUBE[5][-1 - layer][i] = ORIGINAL_STATE[1][i][layer]
+
+    def _b_move_anticlockwise_internal(self, layer):
+        layer -= 1
+        ORIGINAL_STATE = deepcopy(self._STATE_OF_CUBE)
+        for i in range(self._SIZE_OF_CUBE):
+            self._STATE_OF_CUBE[0][layer][i] = ORIGINAL_STATE[1][self._SIZE_OF_CUBE - i - 1][layer]
+            self._STATE_OF_CUBE[1][i][layer] = ORIGINAL_STATE[5][layer][i]
+            self._STATE_OF_CUBE[3][i][-1 - layer] = ORIGINAL_STATE[0][layer][i]
+            self._STATE_OF_CUBE[5][-1 - layer][i] = ORIGINAL_STATE[3][self._SIZE_OF_CUBE - i - 1][-1 - layer]
+
     def r(self, clockwise=True, layer=1):
         if layer > self._MAX_LAYER or layer <= 0:
             raise Exception("Invalid layer!")
@@ -147,6 +202,24 @@ class Cube(ABC):
             self._STATE_OF_CUBE[4][i][0] = ORIGINAL_STATE[5][self._SIZE_OF_CUBE - i - 1][-1]
             self._STATE_OF_CUBE[5][i][-1] = ORIGINAL_STATE[2][i][-1]
 
+    def _r_move_clockwise_internal(self, layer):
+        layer -= 1
+        ORIGINAL_STATE = deepcopy(self._STATE_OF_CUBE)
+        for i in range(self._SIZE_OF_CUBE):
+            self._STATE_OF_CUBE[0][i][-1 - layer] = ORIGINAL_STATE[2][i][-1 - layer]
+            self._STATE_OF_CUBE[2][i][-1 - layer] = ORIGINAL_STATE[5][i][-1 - layer]
+            self._STATE_OF_CUBE[4][i][layer] = ORIGINAL_STATE[0][self._SIZE_OF_CUBE - i - 1][-1 - layer]
+            self._STATE_OF_CUBE[5][i][-1 - layer] = ORIGINAL_STATE[4][self._SIZE_OF_CUBE - i - 1][layer]
+
+    def _r_move_anticlockwise_internal(self, layer):
+        layer -= 1
+        ORIGINAL_STATE = deepcopy(self._STATE_OF_CUBE)
+        for i in range(self._SIZE_OF_CUBE):
+            self._STATE_OF_CUBE[0][i][-1 - layer] = ORIGINAL_STATE[4][self._SIZE_OF_CUBE - i - 1][layer]
+            self._STATE_OF_CUBE[2][i][-1 - layer] = ORIGINAL_STATE[0][i][-1 - layer]
+            self._STATE_OF_CUBE[4][i][layer] = ORIGINAL_STATE[5][self._SIZE_OF_CUBE - i - 1][-1 - layer]
+            self._STATE_OF_CUBE[5][i][-1 - layer] = ORIGINAL_STATE[2][i][-1 - layer]
+
     def l(self, clockwise=True, layer=1):
         if layer > self._MAX_LAYER or layer <= 0:
             raise Exception("Invalid layer!")
@@ -172,6 +245,25 @@ class Cube(ABC):
             self._STATE_OF_CUBE[2][i][0] = ORIGINAL_STATE[5][i][0]
             self._STATE_OF_CUBE[4][i][-1] = ORIGINAL_STATE[0][self._SIZE_OF_CUBE - i - 1][0]
             self._STATE_OF_CUBE[5][i][0] = ORIGINAL_STATE[4][self._SIZE_OF_CUBE - i - 1][-1]
+
+    def _l_move_clockwise_internal(self, layer):
+        layer -= 1
+        ORIGINAL_STATE = deepcopy(self._STATE_OF_CUBE)
+        for i in range(self._SIZE_OF_CUBE):
+            self._STATE_OF_CUBE[0][i][layer] = ORIGINAL_STATE[4][self._SIZE_OF_CUBE - i - 1][-1 - layer]
+            self._STATE_OF_CUBE[2][i][layer] = ORIGINAL_STATE[0][i][layer]
+            self._STATE_OF_CUBE[4][i][-1 - layer] = ORIGINAL_STATE[5][self._SIZE_OF_CUBE - i - 1][layer]
+            self._STATE_OF_CUBE[5][i][layer] = ORIGINAL_STATE[2][i][layer]
+
+    def _l_move_anticlockwise_internal(self, layer):
+        layer -= 1
+        ORIGINAL_STATE = deepcopy(self._STATE_OF_CUBE)
+        for i in range(self._SIZE_OF_CUBE):
+            self._STATE_OF_CUBE[0][i][layer] = ORIGINAL_STATE[2][i][layer]
+            self._STATE_OF_CUBE[2][i][layer] = ORIGINAL_STATE[5][i][layer]
+            self._STATE_OF_CUBE[4][i][-1 - layer] = ORIGINAL_STATE[0][self._SIZE_OF_CUBE - i - 1][layer]
+            self._STATE_OF_CUBE[5][i][layer] = ORIGINAL_STATE[4][self._SIZE_OF_CUBE - i - 1][-1 - layer]
+
     def d(self, clockwise=True, layer=1):
         if layer > self._MAX_LAYER or layer <= 0:
             raise Exception("Invalid layer!")
@@ -198,6 +290,24 @@ class Cube(ABC):
             self._STATE_OF_CUBE[3][-1][i] = ORIGINAL_STATE[4][-1][i]
             self._STATE_OF_CUBE[4][-1][i] = ORIGINAL_STATE[1][-1][i]
 
+    def _d_move_clockwise_internal(self, layer):
+        layer -= 1
+        ORIGINAL_STATE = deepcopy(self._STATE_OF_CUBE)
+        for i in range(self._SIZE_OF_CUBE):
+            self._STATE_OF_CUBE[1][-1 - layer][i] = ORIGINAL_STATE[4][-1 - layer][i]
+            self._STATE_OF_CUBE[2][-1 - layer][i] = ORIGINAL_STATE[1][-1 - layer][i]
+            self._STATE_OF_CUBE[3][-1 - layer][i] = ORIGINAL_STATE[2][-1 - layer][i]
+            self._STATE_OF_CUBE[4][-1 - layer][i] = ORIGINAL_STATE[3][-1 - layer][i]
+
+    def _d_move_anticlockwise_internal(self, layer):
+        layer -= 1
+        ORIGINAL_STATE = deepcopy(self._STATE_OF_CUBE)
+        for i in range(self._SIZE_OF_CUBE):
+            self._STATE_OF_CUBE[1][-1 - layer][i] = ORIGINAL_STATE[2][-1 - layer][i]
+            self._STATE_OF_CUBE[2][-1 - layer][i] = ORIGINAL_STATE[3][-1 - layer][i]
+            self._STATE_OF_CUBE[3][-1 - layer][i] = ORIGINAL_STATE[4][-1 - layer][i]
+            self._STATE_OF_CUBE[4][-1 - layer][i] = ORIGINAL_STATE[1][-1 - layer][i]
+
     def show(self, colors=False):
         self._generate_top_face()
         self._generate_middle_faces()
@@ -206,7 +316,6 @@ class Cube(ABC):
     # we acquire amount of spaces that should be placed before number, by subtracting length of current element from
     # length of maximum element(for better visual look)
     def _print_spaces(self, cube_element):
-        self._MAX_NUM_LEN = len(str(self._STATE_OF_CUBE[-1][-1][-1]))
         return (self._MAX_NUM_LEN - len(str(cube_element))) * " "
 
     def _generate_top_face(self):
@@ -254,3 +363,50 @@ class Cube(ABC):
 
     def _show_with_colors(self):
         pass
+
+    def move(self, moves):
+        self._match_moves(moves)
+
+    def _match_moves(self, moves):
+        moves = moves.strip().split(" ")
+        moves_dict = {
+            "R": self.r,
+            "L": self.l,
+            "F": self.f,
+            "U": self.u,
+            "B": self.b,
+            "D": self.d
+        }
+        for move in moves:
+            if len(move) == 2 and move[0] == "2":
+                moves_dict[move[-1]]()
+                moves_dict[move[-1]]()
+            elif len(move) == 2 and move[-1] == "'":
+                moves_dict[move[0]](clockwise=False)
+            elif len(move) == 1:
+                moves_dict[move]()
+
+    def scramble(self, number_of_moves=30):
+        scramble = ""
+        moves = ["R", "L", "U", "D", "B", "F"]
+        for i in range(number_of_moves):
+            random_move = random.choice(moves)
+            move_instance = random.randint(1, 3)
+            if move_instance == 1:
+                scramble += random_move + " "
+            elif move_instance == 2:
+                scramble += random_move + "' "
+            elif move_instance == 3:
+                scramble += "2" + random_move + " "
+            else:
+                raise Exception("Invalid instance of move!")
+        self._match_moves(scramble)
+        return scramble
+
+    def get_state(self):
+        return self._STATE_OF_CUBE
+
+    def set_state(self, state):
+        self._STATE_OF_CUBE = state
+
+    # create functions that handle advanced moves (Fw, 2Fw, 2Fw3)
