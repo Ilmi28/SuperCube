@@ -1,4 +1,4 @@
-from cube import Cube
+from supercube.cube import Cube
 
 
 class RubiksCube(Cube):
