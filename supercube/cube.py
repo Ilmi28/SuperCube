@@ -1,11 +1,16 @@
 from abc import ABC, abstractmethod
 from copy import deepcopy
 import random
+import re
 
 class Cube(ABC):
     @property
     @abstractmethod
     def _SIZE_OF_CUBE(self) -> int:
+        pass
+
+    @abstractmethod
+    def solve(self):
         pass
 
     def __init__(self):
@@ -388,19 +393,18 @@ class Cube(ABC):
 
     def _show_with_colors(self):
         color_config = {
-            "top": "🟪",
-            "left": "🟧",
-            "front": "🟩",
-            "right": "🟥",
-            "rear": "🟦",
-            "bottom": "🟨"
+            "U": "🟪",
+            "L": "🟧",
+            "F": "🟩",
+            "R": "🟥",
+            "B": "🟦",
+            "D": "🟨"
         }
         for i in range(self._SIZE_OF_CUBE):
             for j in range(self._SIZE_OF_CUBE):
                 print("⬛", end="")
             print(" ", end="")
             for j in range(self._SIZE_OF_CUBE):
-                element = self._STATE_OF_CUBE[0][i][j]
                 face = self._get_face_by_element(self._STATE_OF_CUBE[0][i][j])
                 print(color_config[face], end="")
             print("")
@@ -427,21 +431,28 @@ class Cube(ABC):
     def _get_face_by_element(self, element):
         square = self._SIZE_OF_CUBE * self._SIZE_OF_CUBE
         if 0 < element <= square:
-            return "top"
+            return "U"
         elif square < element <= square * 2:
-            return "left"
+            return "L"
         elif square * 2 < element <= square * 3:
-            return "front"
+            return "F"
         elif square * 3 < element <= square * 4:
-            return "right"
+            return "R"
         elif square * 4 < element <= square * 5:
-            return "rear"
+            return "B"
         elif square * 5 < element <= square * 6:
-            return "bottom"
-
+            return "D"
 
     def move(self, moves):
         self._match_moves(moves)
+
+    def get_layer_len_from_move(self, move):
+        n = 0
+        for i in move:
+            if not i.isdigit():
+                break
+            n += 1
+        return n
 
     def _match_moves(self, moves):
         moves = moves.strip().split(" ")
@@ -453,54 +464,67 @@ class Cube(ABC):
             "B": self.b,
             "D": self.d
         }
+        ext_move_double = re.compile(r"^[RLFUBD]2$")  # U2, F2, ...
+        ext_move_prime = re.compile(r"^[RLFUBD]'$")  # U', F', ...
+        ext_move_single = re.compile(r"^[RLFUBD]$")  # U, F, ...
+        int_move_single = re.compile(r"^[0-9]+[RLFUBD]$")  # 2U, 3F, ...
+        int_move_prime = re.compile(r"^[0-9]+[RLFUBD]'$")  # 2U', 3F', ...
+        int_move_double = re.compile(r"^[0-9]+[RLFUBD]2$")  # 2U2, 3F2, ...
+        wide_move_single = re.compile(r"^[RLFUBD]w$")  # Uw, Fw, ...
+        wide_move_prime = re.compile(r"^[RLFUBD]w'$")  # Uw', Fw', ...
+        wide_move_double = re.compile(r"^[RLFUBD]w2$")  # Uw2, Fw2, ...
+        adv_wide_move_single = re.compile(r"^[0-9]+[RLFUBD]w$")  # 2Uw, 3Fw, ...
+        adv_wide_move_prime = re.compile(r"^[0-9]+[RLFUBD]w'$")  # 2Uw', 3Fw', ...
+        adv_wide_move_double = re.compile(r"^[0-9]+[RLFUBD]w2$")  # 2Uw2, 3Fw2, ...
         for move in moves:
+            move_index = self.get_layer_len_from_move(move)  # only for use in moves that start with digit
             # U2, F2, ...
-            if len(move) == 2 and move[-1] == "2" and move[0] in moves_dict:
+            if re.search(ext_move_double, move):
                 moves_dict[move[0]]()
                 moves_dict[move[0]]()
             # U', F', ...
-            elif len(move) == 2 and move[-1] == "'" and move[0] in moves_dict:
+            elif re.search(ext_move_prime, move):
                 moves_dict[move[0]](clockwise=False)
             # U, F, ...
-            elif len(move) == 1 and move in moves_dict:
+            elif re.search(ext_move_single, move):
                 moves_dict[move]()
             # 2U, 3F, ...
-            elif len(move) == 2 and move[0].isdigit() and move[-1] in moves_dict:
-                moves_dict[move[1]](layer=int(move[0]))
+            elif re.search(int_move_single, move):
+                moves_dict[move[move_index]](layer=int(move[0]))
             # 2U', 3F', ...
-            elif len(move) == 3 and move[0].isdigit() and move[-1] == "'" and move[1] in moves_dict:
-                moves_dict[move[1]](clockwise=False, layer=int(move[0]))
+            elif re.search(int_move_prime, move):
+                moves_dict[move[move_index]](clockwise=False, layer=int(move[0]))
             # 2U2, 3F2, ...
-            elif len(move) == 3 and move[0].isdigit() and move[-1] == "2" and move[1] in moves_dict:
-                moves_dict[move[1]](layer=int(move[0]))
-                moves_dict[move[1]](layer=int(move[0]))
+            elif re.search(int_move_double, move):
+                moves_dict[move[move_index]](layer=int(move[0]))
+                moves_dict[move[move_index]](layer=int(move[0]))
             # Uw, Fw, ...
-            elif len(move) == 2 and move[-1] == "w" and move[0] in moves_dict:
+            elif re.search(wide_move_single, move):
                 moves_dict[move[0]](layer=1)
                 moves_dict[move[0]](layer=2)
             # Uw', Fw', ...
-            elif len(move) == 3 and move[-2] == "w" and move[-1] == "'" and move[0] in moves_dict:
+            elif re.search(wide_move_prime, move):
                 moves_dict[move[0]](clockwise=False, layer=1)
                 moves_dict[move[0]](clockwise=False, layer=2)
             # Uw2, Fw2, ...
-            elif len(move) == 3 and move[-2] == "w" and move[-1] == "2" and move[0] in moves_dict:
+            elif re.search(wide_move_double, move):
                 moves_dict[move[0]](clockwise=False, layer=1)
                 moves_dict[move[0]](clockwise=False, layer=2)
                 moves_dict[move[0]](clockwise=False, layer=1)
                 moves_dict[move[0]](clockwise=False, layer=2)
             # 2Uw, 3Fw, ...
-            elif len(move) == 3 and move[0].isdigit() and move[-1] == "w" and move[1] in moves_dict:
+            elif re.search(adv_wide_move_single, move):
                 for i in range(int(move[0])):
-                    moves_dict[move[1]](layer=i+1)
+                    moves_dict[move[move_index]](layer=i+1)
             # 2Uw', 3Fw', ...
-            elif len(move) == 4 and move[0].isdigit() and move[-2] == "w" and move[-1] == "'" and move[1] in moves_dict:
-                for i in range(int(move[0])):
-                    moves_dict[move[1]](clockwise=False, layer=i+1)
+            elif re.search(adv_wide_move_prime, move):
+                for i in range(int(move[0:move_index])):
+                    moves_dict[move[move_index]](clockwise=False, layer=i+1)
             # 2Uw2, 3Fw2, ...
-            elif len(move) == 4 and move[0].isdigit() and move[-2] == "w" and move[-1] == "2" and move[1] in moves_dict:
-                for i in range(int(move[0])):
-                    moves_dict[move[1]](layer=i+1)
-                    moves_dict[move[1]](layer=i+1)
+            elif re.search(adv_wide_move_double, move):
+                for i in range(int(move[0:move_index])):
+                    moves_dict[move[move_index]](layer=i+1)
+                    moves_dict[move[move_index]](layer=i+1)
             else:
                 raise Exception("Invalid move!")
 
@@ -532,3 +556,37 @@ class Cube(ABC):
     def set_state(self, state):
         self._STATE_OF_CUBE = state
 
+    def define_state(self, cube_string):
+        up_element = 1
+        left_element = self._SIZE_OF_CUBE * self._SIZE_OF_CUBE + up_element
+        front_element = self._SIZE_OF_CUBE * self._SIZE_OF_CUBE + left_element
+        right_element = self._SIZE_OF_CUBE * self._SIZE_OF_CUBE + front_element
+        back_element = self._SIZE_OF_CUBE * self._SIZE_OF_CUBE + right_element
+        down_element = self._SIZE_OF_CUBE * self._SIZE_OF_CUBE + back_element
+        cube_string_index = 0
+        if len(cube_string) != self._SIZE_OF_CUBE * self._SIZE_OF_CUBE * 6:
+            raise Exception("Invalid number of elements!")
+        for face in range(6):
+            for col in range(self._SIZE_OF_CUBE):
+                for row in range(self._SIZE_OF_CUBE):
+                    if cube_string[cube_string_index] == "U":
+                        self._STATE_OF_CUBE[face][col][row] = up_element
+                        up_element += 1
+                    elif cube_string[cube_string_index] == "L":
+                        self._STATE_OF_CUBE[face][col][row] = left_element
+                        left_element += 1
+                    elif cube_string[cube_string_index] == "F":
+                        self._STATE_OF_CUBE[face][col][row] = front_element
+                        front_element += 1
+                    elif cube_string[cube_string_index] == "R":
+                        self._STATE_OF_CUBE[face][col][row] = right_element
+                        right_element += 1
+                    elif cube_string[cube_string_index] == "B":
+                        self._STATE_OF_CUBE[face][col][row] = back_element
+                        back_element += 1
+                    elif cube_string[cube_string_index] == "D":
+                        self._STATE_OF_CUBE[face][col][row] = down_element
+                        down_element += 1
+                    else:
+                        raise Exception("Invalid element!")
+                    cube_string_index += 1
