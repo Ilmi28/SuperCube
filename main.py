@@ -1,9 +1,10 @@
+from copy import deepcopy
+import random
 from supercube.RubiksCube import RubiksCube
 from supercube.PocketCube import PocketCube
+from supercube.NCube import NCube
 
-cube = PocketCube()
+cube = RubiksCube()
 cube.show(colors=True)
-cube.scramble(number_of_moves=50)
-cube.show()
+cube.define_state("BYYBWGORORWBOOBGYYYWWRGGGOYBOGWRBRGWOGWOBWRYWRYBRYROBG")
 print(cube.solve())
-cube.show(colors=True)

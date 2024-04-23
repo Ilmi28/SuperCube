@@ -3,6 +3,7 @@ from copy import deepcopy
 import random
 import re
 
+
 class Cube(ABC):
     @property
     @abstractmethod
@@ -36,6 +37,10 @@ class Cube(ABC):
             raise Exception("Invalid layer!")
         if clockwise and layer == 1:
             self._f_move_clockwise_external()
+        elif clockwise and layer == self._SIZE_OF_CUBE:
+            self._b_move_anticlockwise_external()
+        elif not clockwise and layer == self._SIZE_OF_CUBE:
+            self._b_move_clockwise_external()
         elif clockwise and layer > 1:
             self._f_move_clockwise_internal(layer=layer)
         elif not clockwise and layer == 1:
@@ -102,6 +107,10 @@ class Cube(ABC):
             raise Exception("Invalid layer!")
         if clockwise and layer == 1:
             self._u_move_clockwise_external()
+        elif clockwise and layer == self._SIZE_OF_CUBE:
+            self._d_move_anticlockwise_external()
+        elif not clockwise and layer == self._SIZE_OF_CUBE:
+            self._d_move_clockwise_external()
         elif clockwise and layer > 1:
             self._u_move_clockwise_internal(layer=layer)
         elif not clockwise and layer == 1:
@@ -150,6 +159,10 @@ class Cube(ABC):
             raise Exception("Invalid layer!")
         if clockwise and layer == 1:
             self._b_move_clockwise_external()
+        elif clockwise and layer == self._SIZE_OF_CUBE:
+            self._f_move_anticlockwise_external()
+        elif not clockwise and layer == self._SIZE_OF_CUBE:
+            self._f_move_clockwise_external()
         elif clockwise and layer > 1:
             self._b_move_clockwise_internal(layer=layer)
         elif not clockwise and layer == 1:
@@ -189,7 +202,7 @@ class Cube(ABC):
         ORIGINAL_STATE = deepcopy(self._STATE_OF_CUBE)
         for i in range(self._SIZE_OF_CUBE):
             self._STATE_OF_CUBE[0][layer][i] = ORIGINAL_STATE[1][self._SIZE_OF_CUBE - i - 1][layer]
-            self._STATE_OF_CUBE[1][i][layer] = ORIGINAL_STATE[5][layer][i]
+            self._STATE_OF_CUBE[1][i][layer] = ORIGINAL_STATE[5][-1 - layer][i]
             self._STATE_OF_CUBE[3][i][-1 - layer] = ORIGINAL_STATE[0][layer][i]
             self._STATE_OF_CUBE[5][-1 - layer][i] = ORIGINAL_STATE[3][self._SIZE_OF_CUBE - i - 1][-1 - layer]
 
@@ -198,6 +211,10 @@ class Cube(ABC):
             raise Exception("Invalid layer!")
         if clockwise and layer == 1:
             self._r_move_clockwise_external()
+        elif clockwise and layer == self._SIZE_OF_CUBE:
+            self._l_move_anticlockwise_external()
+        elif not clockwise and layer == self._SIZE_OF_CUBE:
+            self._l_move_clockwise_external()
         elif clockwise and layer > 1:
             self._r_move_clockwise_internal(layer=layer)
         elif not clockwise and layer == 1:
@@ -246,6 +263,10 @@ class Cube(ABC):
             raise Exception("Invalid layer!")
         if clockwise and layer == 1:
             self._l_move_clockwise_external()
+        elif clockwise and layer == self._SIZE_OF_CUBE:
+            self._r_move_anticlockwise_external()
+        elif not clockwise and layer == self._SIZE_OF_CUBE:
+            self._r_move_clockwise_external()
         elif clockwise and layer > 1:
             self._l_move_clockwise_internal(layer=layer)
         elif not clockwise and layer == 1:
@@ -294,6 +315,10 @@ class Cube(ABC):
             raise Exception("Invalid layer!")
         if clockwise and layer == 1:
             self._d_move_clockwise_external()
+        elif clockwise and layer == self._SIZE_OF_CUBE:
+            self._u_move_anticlockwise_external()
+        elif not clockwise and layer == self._SIZE_OF_CUBE:
+            self._u_move_clockwise_external()
         elif clockwise and layer > 1:
             self._d_move_clockwise_internal(layer=layer)
         elif not clockwise and layer == 1:
@@ -368,9 +393,9 @@ class Cube(ABC):
             for j in range(4):
                 for k in range(self._SIZE_OF_CUBE - 1):
                     print(self._print_spaces(self._STATE_OF_CUBE[j + 1][i][k]) +
-                          str(self._STATE_OF_CUBE[j+1][i][k]) + "  ", end="")
+                          str(self._STATE_OF_CUBE[j + 1][i][k]) + "  ", end="")
                 print(self._print_spaces(self._STATE_OF_CUBE[j + 1][i][-1]) +
-                      str(self._STATE_OF_CUBE[j+1][i][-1]) + " │ ", end="")
+                      str(self._STATE_OF_CUBE[j + 1][i][-1]) + " │ ", end="")
             print("")
         print("└" + "─" * self._SQUARE_LEN + "┼" + "─" * self._SQUARE_LEN + "┼" + "─" * self._SQUARE_LEN + "┴" +
               "─" * self._SQUARE_LEN + "┘")
@@ -446,7 +471,7 @@ class Cube(ABC):
     def move(self, moves):
         self._match_moves(moves)
 
-    def get_layer_len_from_move(self, move):
+    def _get_layer_len_from_move(self, move):
         n = 0
         for i in move:
             if not i.isdigit():
@@ -477,7 +502,7 @@ class Cube(ABC):
         adv_wide_move_prime = re.compile(r"^[0-9]+[RLFUBD]w'$")  # 2Uw', 3Fw', ...
         adv_wide_move_double = re.compile(r"^[0-9]+[RLFUBD]w2$")  # 2Uw2, 3Fw2, ...
         for move in moves:
-            move_index = self.get_layer_len_from_move(move)  # only for use in moves that start with digit
+            move_index = self._get_layer_len_from_move(move)  # only for use in moves that start with digit
             # U2, F2, ...
             if re.search(ext_move_double, move):
                 moves_dict[move[0]]()
@@ -514,17 +539,17 @@ class Cube(ABC):
                 moves_dict[move[0]](clockwise=False, layer=2)
             # 2Uw, 3Fw, ...
             elif re.search(adv_wide_move_single, move):
-                for i in range(int(move[0])):
-                    moves_dict[move[move_index]](layer=i+1)
+                for i in range(int(move[0:move_index])):
+                    moves_dict[move[move_index]](layer=i + 1)
             # 2Uw', 3Fw', ...
             elif re.search(adv_wide_move_prime, move):
                 for i in range(int(move[0:move_index])):
-                    moves_dict[move[move_index]](clockwise=False, layer=i+1)
+                    moves_dict[move[move_index]](clockwise=False, layer=i + 1)
             # 2Uw2, 3Fw2, ...
             elif re.search(adv_wide_move_double, move):
                 for i in range(int(move[0:move_index])):
-                    moves_dict[move[move_index]](layer=i+1)
-                    moves_dict[move[move_index]](layer=i+1)
+                    moves_dict[move[move_index]](layer=i + 1)
+                    moves_dict[move[move_index]](layer=i + 1)
             else:
                 raise Exception("Invalid move!")
 
@@ -569,24 +594,33 @@ class Cube(ABC):
         for face in range(6):
             for col in range(self._SIZE_OF_CUBE):
                 for row in range(self._SIZE_OF_CUBE):
-                    if cube_string[cube_string_index] == "U":
+                    if cube_string[cube_string_index] == "W":
                         self._STATE_OF_CUBE[face][col][row] = up_element
-                        up_element += 1
-                    elif cube_string[cube_string_index] == "L":
+                        if up_element < self._SIZE_OF_CUBE * self._SIZE_OF_CUBE:
+                            up_element += 1
+                    elif cube_string[cube_string_index] == "O":
                         self._STATE_OF_CUBE[face][col][row] = left_element
-                        left_element += 1
-                    elif cube_string[cube_string_index] == "F":
+                        if left_element < self._SIZE_OF_CUBE * self._SIZE_OF_CUBE * 2:
+                            left_element += 1
+                    elif cube_string[cube_string_index] == "G":
                         self._STATE_OF_CUBE[face][col][row] = front_element
-                        front_element += 1
+                        if front_element < self._SIZE_OF_CUBE * self._SIZE_OF_CUBE * 3:
+                            front_element += 1
                     elif cube_string[cube_string_index] == "R":
                         self._STATE_OF_CUBE[face][col][row] = right_element
-                        right_element += 1
+                        if right_element < self._SIZE_OF_CUBE * self._SIZE_OF_CUBE * 4:
+                            right_element += 1
                     elif cube_string[cube_string_index] == "B":
                         self._STATE_OF_CUBE[face][col][row] = back_element
-                        back_element += 1
-                    elif cube_string[cube_string_index] == "D":
+                        if back_element < self._SIZE_OF_CUBE * self._SIZE_OF_CUBE * 5:
+                            back_element += 1
+                    elif cube_string[cube_string_index] == "Y":
                         self._STATE_OF_CUBE[face][col][row] = down_element
-                        down_element += 1
+                        if down_element < self._SIZE_OF_CUBE * self._SIZE_OF_CUBE * 6:
+                            down_element += 1
                     else:
                         raise Exception("Invalid element!")
                     cube_string_index += 1
+
+    def reset(self):
+        self._STATE_OF_CUBE = self._generate_clear_state()
