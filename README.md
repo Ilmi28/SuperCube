@@ -5,13 +5,11 @@ Library for Rubik's Cube manipulation. Creator and customizer for cubes of any s
 ## Creating instance of cube
 You can create Rubik's cube, Pocket cube and NxN cube, where N means positive number.
 ```
-from supercube.RubiksCube import RubiksCube
-from supercube.PocketCube import PocketCube
-from supercube.NCube import NCube
+import supercube
 
-rubiks_cube = RubiksCube() # creates 3X3 cube
-pocket_cube = PocketCube() # creates 2x2 cube
-n_cube = NCube(7) # creates NxN cube (in this case N is 7)
+rubiks_cube = supercube.RubiksCube() # creates 3X3 cube
+pocket_cube = supercube.PocketCube() # creates 2x2 cube
+n_cube = supercube.NCube(7) # creates NxN cube (in this case N is 7)
 
 rubiks_cube.show()
 rubiks_cube.show(colors=True)
