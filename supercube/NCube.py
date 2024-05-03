@@ -7,7 +7,7 @@ class NCube(Cube):
         pass
 
     def solve(self):
-        pass
+        raise Exception("N Cube cannot be solved!")
 
     def __init__(self, size_of_cube):
         self._SIZE_OF_CUBE = size_of_cube

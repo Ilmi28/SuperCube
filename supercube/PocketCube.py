@@ -1,5 +1,5 @@
 from supercube.cube import Cube
-from kociemba_2x2 import solver
+from supercube.kociemba_2x2 import solver
 import os
 
 class PocketCube(Cube):

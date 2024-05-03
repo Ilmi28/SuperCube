@@ -1,5 +1,5 @@
 from supercube.cube import Cube
-import kociemba
+from supercube import kociemba
 
 
 class RubiksCube(Cube):
