@@ -10,7 +10,7 @@ a = cb.CubieCube()
 # ############################ Move table for the the corners. ##################################
 
 # The twist coordinate describes the 3^6 = 729 possible orientations of the 8 corners
-fname = "supercube/.move_corntwist"
+fname = ".move_corntwist"
 #print("creating " + fname + " table...")
 corntwist_move = ar.array('H', [0 for i in range(N_TWIST * N_MOVE)])
 for i in range(N_TWIST):
@@ -23,7 +23,7 @@ for i in range(N_TWIST):
 
 
 # The corners coordinate describes the 7! = 5040 permutations of the corners.
-fname = "supercube/.move_cornperm"
+fname = ".move_cornperm"
 if not path.isfile(fname):
     #print("creating " + fname + " table...")
     cornperm_move = ar.array('H', [0 for i in range(N_CORNERS * N_MOVE)])

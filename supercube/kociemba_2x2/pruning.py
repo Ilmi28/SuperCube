@@ -13,7 +13,7 @@ corner_depth = None
 
 def create_cornerprun_table():
     """Creates/loads the corner pruning table."""
-    fname = "supercube/.cornerprun"
+    fname = ".cornerprun"
     global corner_depth
     if not path.isfile(fname):
         #print("creating " + fname + " table...")
