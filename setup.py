@@ -5,8 +5,8 @@ LONG_DESCRIPTION = open("README.md", encoding="utf8").read()
 
 
 setup(
-    name="super_rubik_cube",
-    version="0.0.2",
+    name="super-rubik-cube",
+    version="1.0.0",
     author="Ilmi28",
     author_email="<ilmialiev28@gmail.com>",
     description=DESCRIPTION,
