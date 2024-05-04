@@ -1,9 +1,3 @@
-# Instalation
-
-```
-pip install super-rubik-cube
-```
-
 # Description
 Library for Rubik's Cube manipulation. Creator and customizer for cubes of any size, and solver for 2x2 and 3x3 cubes (Herbert Kociemba's algorithms)
 
