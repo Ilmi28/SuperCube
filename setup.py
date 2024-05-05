@@ -15,9 +15,9 @@ setup(
     description=DESCRIPTION,
     long_description_content_type="text/markdown",
     long_description=LONG_DESCRIPTION,
-    package_data={'supercube': ['.cornerprun', '.move_cornperm', 'kociemba/pykociemba/prunetables/*']},
+    package_data={'supercube': ['kociemba/pykociemba/prunetables/*']},
     packages=find_packages(),
-    keywords=['python', 'rubik', 'cube', 'solve', '3x3', '2x2', "rubik's cube", 'pocket cube', 'NxN', 'kociemba', 'supercube'],
+    keywords=['python', 'rubik', 'cube', 'solve', '3x3', '2x2', "rubik's cube", 'pocket cube', 'NxN', 'kociemba', 'supercube', 'solver'],
     project_urls=project_urls,
     license='GPL-3.0'
 )

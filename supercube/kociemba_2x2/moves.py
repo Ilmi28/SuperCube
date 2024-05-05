@@ -40,7 +40,6 @@ if not path.isfile(fname):
     fh = open(fname, "wb")
     cornperm_move.tofile(fh)
     fh.close()
-    print()
 else:
     #print("loading " + fname + " table...")
     fh = open(fname, "rb")

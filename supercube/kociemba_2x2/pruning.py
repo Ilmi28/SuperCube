@@ -23,7 +23,6 @@ def create_cornerprun_table():
         corner_depth[defs.N_TWIST * corners + twist] = 0
         done = 1
         depth = 0
-        print("Wait a second...")
         while done != defs.N_CORNERS * defs.N_TWIST:
             for corners in range(defs.N_CORNERS):
                 for twist in range(defs.N_TWIST):
@@ -35,7 +34,6 @@ def create_cornerprun_table():
                             if corner_depth[idx1] == -1:  # entry not yet filled
                                 corner_depth[idx1] = depth + 1
                                 done += 1
-
 
             depth += 1
         fh = open(fname, "wb")
