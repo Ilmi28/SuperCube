@@ -3,6 +3,7 @@ from copy import deepcopy
 import random
 import re
 import pyvista as pv
+import numpy as np
 
 
 class Cube(ABC):
@@ -16,17 +17,34 @@ class Cube(ABC):
         pass
 
     def __init__(self):
-        self._UP_ELEMENTS = []
-        self._LEFT_ELEMENTS = []
-        self._FRONT_ELEMENTS = []
-        self._RIGHT_ELEMENTS = []
-        self._BACK_ELEMENTS = []
-        self._DOWN_ELEMENTS = []
+        self._UP_COLOR_ELEMENTS = []
+        self._LEFT_COLOR_ELEMENTS = []
+        self._FRONT_COLOR_ELEMENTS = []
+        self._RIGHT_COLOR_ELEMENTS = []
+        self._BACK_COLOR_ELEMENTS = []
+        self._DOWN_COLOR_ELEMENTS = []
         self._STATE_OF_CUBE = self.__generate_clear_state()
         self._MAX_NUM_LEN = len(str(self._STATE_OF_CUBE[-1][-1][-1]))
         self._SQUARE_LEN = 2 + self._MAX_NUM_LEN * self._SIZE_OF_CUBE + 2 * (self._SIZE_OF_CUBE - 1)
         self._MAX_LAYER = self._SIZE_OF_CUBE
+        self.GAP_SIZE = 0.01
+        self.CENTER_3DCUBE_SIZE = (self._SIZE_OF_CUBE - 1) + self.GAP_SIZE * (self._SIZE_OF_CUBE - 1)
 
+    def get_color_by_element(self, element: int):
+        if element in self._UP_COLOR_ELEMENTS:
+            return "W"
+        elif element in self._BACK_COLOR_ELEMENTS:
+            return "Y"
+        elif element in self._LEFT_COLOR_ELEMENTS:
+            return "O"
+        elif element in self._RIGHT_COLOR_ELEMENTS:
+            return "R"
+        elif element in self._BACK_COLOR_ELEMENTS:
+            return "B"
+        elif element in self._FRONT_COLOR_ELEMENTS:
+            return "G"
+        else:
+            raise Exception("No such element!")
 
     def __generate_clear_state(self):
         n = 1
@@ -42,18 +60,17 @@ class Cube(ABC):
         sq = self._SIZE_OF_CUBE**2
         for element in range(1, total_number_of_elements+1):
             if element in range(1, sq+1):
-                self._UP_ELEMENTS.append(element)
+                self._UP_COLOR_ELEMENTS.append(element)
             elif element in range(sq+1, sq*2+1):
-                self._LEFT_ELEMENTS.append(element)
+                self._LEFT_COLOR_ELEMENTS.append(element)
             elif element in range(sq*2+1, sq*3+1):
-                self._FRONT_ELEMENTS.append(element)
+                self._FRONT_COLOR_ELEMENTS.append(element)
             elif element in range(sq*3+1, sq*4+1):
-                self._RIGHT_ELEMENTS.append(element)
+                self._RIGHT_COLOR_ELEMENTS.append(element)
             elif element in range(sq*4+1, sq*5+1):
-                self._BACK_ELEMENTS.append(element)
+                self._BACK_COLOR_ELEMENTS.append(element)
             elif element in range(sq*5+1, sq*6+1):
-                self._DOWN_ELEMENTS.append(element)
-
+                self._DOWN_COLOR_ELEMENTS.append(element)
         return result
 
     def f(self, clockwise=True, layer=1):
@@ -470,7 +487,7 @@ class Cube(ABC):
                     print(color_icon_config["empty"], end="")
             print(" ", end="")
             for j in range(self._SIZE_OF_CUBE):
-                face = self.__get_face_by_element(self._STATE_OF_CUBE[0][i][j])
+                face = self._get_face_by_element(self._STATE_OF_CUBE[0][i][j])
                 if not icons:
                     print(color_text_config[face], end="")
                 else:
@@ -480,7 +497,7 @@ class Cube(ABC):
         for i in range(self._SIZE_OF_CUBE):
             for j in range(1, 5):
                 for k in range(self._SIZE_OF_CUBE):
-                    face = self.__get_face_by_element(self._STATE_OF_CUBE[j][i][k])
+                    face = self._get_face_by_element(self._STATE_OF_CUBE[j][i][k])
                     if not icons:
                         print(color_text_config[face], end="")
                     else:
@@ -496,7 +513,7 @@ class Cube(ABC):
                     print(color_icon_config["empty"], end="")
             print(" ", end="")
             for j in range(self._SIZE_OF_CUBE):
-                face = self.__get_face_by_element(self._STATE_OF_CUBE[5][i][j])
+                face = self._get_face_by_element(self._STATE_OF_CUBE[5][i][j])
                 if not icons:
                     print(color_text_config[face], end="")
                 else:
@@ -505,19 +522,19 @@ class Cube(ABC):
         print("")
         print("")
 
-    def __get_face_by_element(self, element):
+    def _get_face_by_element(self, element: int):
         square = self._SIZE_OF_CUBE * self._SIZE_OF_CUBE
-        if element in self._UP_ELEMENTS:
+        if element in self._UP_COLOR_ELEMENTS:
             return "U"
-        elif element in self._LEFT_ELEMENTS:
+        elif element in self._LEFT_COLOR_ELEMENTS:
             return "L"
-        elif element in self._FRONT_ELEMENTS:
+        elif element in self._FRONT_COLOR_ELEMENTS:
             return "F"
-        elif element in self._RIGHT_ELEMENTS:
+        elif element in self._RIGHT_COLOR_ELEMENTS:
             return "R"
-        elif element in self._BACK_ELEMENTS:
+        elif element in self._BACK_COLOR_ELEMENTS:
             return "B"
-        elif element in self._DOWN_ELEMENTS:
+        elif element in self._DOWN_COLOR_ELEMENTS:
             return "D"
 
     def move(self, moves):
@@ -633,13 +650,13 @@ class Cube(ABC):
     def set_state(self, state):
         self._STATE_OF_CUBE = state
 
-    def define_state(self, cube_string):
-        self._UP_ELEMENTS = []
-        self._LEFT_ELEMENTS = []
-        self._FRONT_ELEMENTS = []
-        self._RIGHT_ELEMENTS = []
-        self._BACK_ELEMENTS = []
-        self._DOWN_ELEMENTS = []
+    def define_state(self, cube_string: str):
+        self._UP_COLOR_ELEMENTS = []
+        self._LEFT_COLOR_ELEMENTS = []
+        self._FRONT_COLOR_ELEMENTS = []
+        self._RIGHT_COLOR_ELEMENTS = []
+        self._BACK_COLOR_ELEMENTS = []
+        self._DOWN_COLOR_ELEMENTS = []
         cube_string_index = 0
         if len(cube_string) != self._SIZE_OF_CUBE * self._SIZE_OF_CUBE * 6:
             raise Exception("Invalid number of elements!")
@@ -648,17 +665,17 @@ class Cube(ABC):
                 for col in range(self._SIZE_OF_CUBE):
                     element = self._STATE_OF_CUBE[face][row][col]
                     if cube_string[cube_string_index] == "W":
-                        self._UP_ELEMENTS.append(element)
+                        self._UP_COLOR_ELEMENTS.append(element)
                     elif cube_string[cube_string_index] == "O":
-                        self._LEFT_ELEMENTS.append(element)
+                        self._LEFT_COLOR_ELEMENTS.append(element)
                     elif cube_string[cube_string_index] == "G":
-                        self._FRONT_ELEMENTS.append(element)
+                        self._FRONT_COLOR_ELEMENTS.append(element)
                     elif cube_string[cube_string_index] == "R":
-                        self._RIGHT_ELEMENTS.append(element)
+                        self._RIGHT_COLOR_ELEMENTS.append(element)
                     elif cube_string[cube_string_index] == "B":
-                        self._BACK_ELEMENTS.append(element)
+                        self._BACK_COLOR_ELEMENTS.append(element)
                     elif cube_string[cube_string_index] == "Y":
-                        self._DOWN_ELEMENTS.append(element)
+                        self._DOWN_COLOR_ELEMENTS.append(element)
                     else:
                         raise Exception("Invalid element!")
                     cube_string_index += 1
@@ -666,17 +683,20 @@ class Cube(ABC):
     def reset(self):
         self._STATE_OF_CUBE = self.__generate_clear_state()
 
-    def __add_plane(plotter, center: (float, float, float), direction: (float, float, float), color: str):
+    def __add_plane(self, plotter, center: (float, float, float), direction: (float, float, float), color: str):
         if color is not None:
             plane = pv.Plane(center=(center[0], center[1], center[2]),
                              direction=(direction[0], direction[1], direction[2]),
                              i_size=0.85, j_size=0.85)
             plotter.add_mesh(plane, color=color)
 
-    def __add_number(plotter, number: str, center: (float, float, float), direction: (float, float, float),
+    def __add_number(self, plotter, number: int, center: (float, float, float), direction: (float, float, float),
                      rotate_x=False):
+        number_width = 0.7
+        if len(str(number)) == 1:
+            number_width = 0.3
         if number is not None:
-            text = pv.Text3D(number, height=0.5, depth=0.0,
+            text = pv.Text3D(str(number), width=number_width, height=0.7, depth=0.0,
                              normal=(direction[0], direction[1], direction[2]),
                              center=(center[0], center[1], center[2]))
             if rotate_x:
@@ -684,10 +704,10 @@ class Cube(ABC):
             plotter.add_mesh(text)
 
     def __add_cubie(self, plotter, center: (float, float, float),
-                    up_color=None, bottom_color=None,
+                    up_color=None, down_color=None,
                     left_color=None, right_color=None,
                     front_color=None, back_color=None,
-                    up_number=None, bottom_number=None,
+                    up_number=None, down_number=None,
                     left_number=None, right_number=None,
                     front_number=None, back_number=None):
         x = center[0]
@@ -704,17 +724,358 @@ class Cube(ABC):
         self.__add_number(plotter, number=left_number, center=(x, y - 0.502, z), direction=(0, -1, 0))
         self.__add_plane(plotter, center=(x, y, z + 0.501), direction=(0, 0, 1), color=up_color)
         self.__add_number(plotter, number=up_number, center=(x, y, z + 0.502), direction=(0, 0, 0.5))
-        self.__add_plane(plotter, center=(x, y, z - 0.501), direction=(0, 0, 1), color=bottom_color)
-        self.__add_number(plotter, number=bottom_number, center=(x, y, z - 0.502), direction=(0, 0, -1))
+        self.__add_plane(plotter, center=(x, y, z - 0.501), direction=(0, 0, 1), color=down_color)
+        self.__add_number(plotter, number=down_number, center=(x, y, z - 0.502), direction=(0, 0, -1))
 
 
 
 
-    def show_3d(self, numbers=False):
-        GAP_SIZE = 0.1
-        CENTER_CUBE_SIZE = (self._SIZE_OF_CUBE - 1) + GAP_SIZE * (self._SIZE_OF_CUBE - 1)
-        plotter = pv.Plotter()
-        center_cube = pv.Cube(x_length=CENTER_CUBE_SIZE, y_length=CENTER_CUBE_SIZE, z_length=CENTER_CUBE_SIZE)
+    def show_3d(self, numbers=False, notebook=False, window_size=(1000, 500)):
+        color_config = {
+            "U": "white",
+            "L": "orange",
+            "F": "green",
+            "R": "red",
+            "B": "royalblue",
+            "D": "yellow"
+        }
+        if notebook:
+            pv.set_jupyter_backend("html")
+            plotter = pv.Plotter(notebook=True, window_size=[window_size[0], window_size[1]])
+        else:
+            plotter = pv.Plotter()
+        center_cube = pv.Cube(x_length=self.CENTER_3DCUBE_SIZE,
+                              y_length=self.CENTER_3DCUBE_SIZE,
+                              z_length=self.CENTER_3DCUBE_SIZE,)
         plotter.add_mesh(center_cube, color="black")
+        self.__plot_3dcube_corners(plotter, color_config, numbers)
+        self.__plot_3dcube_y_axis_angles(plotter, color_config, numbers)
+        self.__plot_3dcube_x_axis_angles(plotter, color_config, numbers)
+        self.__plot_3dcube_z_axis_angles(plotter, color_config, numbers)
+        self.__plot_3dcube_x_axis_centers(plotter, color_config, numbers)
+        self.__plot_3dcube_y_axis_centers(plotter, color_config, numbers)
+        self.__plot_3dcube_z_axis_centers(plotter, color_config, numbers)
         plotter.show()
+
+
+    def __reset_nums(self):
+        self.__up_num = None
+        self.__left_num = None
+        self.__front_num = None
+        self.__right_num = None
+        self.__back_num = None
+        self.__down_num = None
+
+
+    def __set_and_reset_nums(self, numbers: bool, up_num=None, left_num=None,
+                             front_num=None, right_num=None, back_num=None, down_num=None):
+        self.__reset_nums()
+        if up_num and numbers:
+            self.__up_num = up_num
+        if left_num and numbers:
+            self.__left_num = left_num
+        if front_num and numbers:
+            self.__front_num = front_num
+        if right_num and numbers:
+            self.__right_num = right_num
+        if back_num and numbers:
+            self.__back_num = back_num
+        if down_num and numbers:
+            self.__down_num = down_num
+
+
+    def __plot_3dcube_corners(self, plotter, color_config, numbers: bool):
+        half = self.CENTER_3DCUBE_SIZE / 2
+        n = self._SIZE_OF_CUBE-1
+
+        self.__set_and_reset_nums(numbers, up_num=self._STATE_OF_CUBE[0][n][0],
+                                  left_num=self._STATE_OF_CUBE[1][0][n],
+                                  front_num=self._STATE_OF_CUBE[2][0][0])
+
+        self.__add_cubie(plotter, center=(half, -half, half),
+                         up_color=color_config[self._get_face_by_element(self._STATE_OF_CUBE[0][n][0])],
+                         left_color=color_config[self._get_face_by_element(self._STATE_OF_CUBE[1][0][n])],
+                         front_color=color_config[self._get_face_by_element(self._STATE_OF_CUBE[2][0][0])],
+                         up_number=self.__up_num,
+                         left_number=self.__left_num,
+                         front_number=self.__front_num)
+
+        self.__set_and_reset_nums(numbers, up_num=self._STATE_OF_CUBE[0][n][n],
+                                  front_num=self._STATE_OF_CUBE[2][0][n],
+                                  right_num=self._STATE_OF_CUBE[3][0][0])
+
+        self.__add_cubie(plotter, center=(half, half, half),
+                         up_color=color_config[self._get_face_by_element(self._STATE_OF_CUBE[0][n][n])],
+                         front_color=color_config[self._get_face_by_element(self._STATE_OF_CUBE[2][0][n])],
+                         right_color=color_config[self._get_face_by_element(self._STATE_OF_CUBE[3][0][0])],
+                         up_number=self.__up_num,
+                         front_number=self.__front_num,
+                         right_number=self.__right_num)
+
+        self.__set_and_reset_nums(numbers, left_num=self._STATE_OF_CUBE[1][n][n],
+                                  front_num=self._STATE_OF_CUBE[2][n][0],
+                                  down_num=self._STATE_OF_CUBE[5][0][0])
+
+        self.__add_cubie(plotter, center=(half, -half, -half),
+                         left_color=color_config[self._get_face_by_element(self._STATE_OF_CUBE[1][n][n])],
+                         front_color=color_config[self._get_face_by_element(self._STATE_OF_CUBE[2][n][0])],
+                         down_color=color_config[self._get_face_by_element(self._STATE_OF_CUBE[5][0][0])],
+                         left_number=self.__left_num,
+                         front_number=self.__front_num,
+                         down_number=self.__down_num)
+
+        self.__set_and_reset_nums(numbers, right_num=self._STATE_OF_CUBE[3][n][0],
+                                  front_num=self._STATE_OF_CUBE[2][n][n],
+                                  down_num=self._STATE_OF_CUBE[5][0][n])
+
+        self.__add_cubie(plotter, center=(half, half, -half),
+                         right_color=color_config[self._get_face_by_element(self._STATE_OF_CUBE[3][n][0])],
+                         front_color=color_config[self._get_face_by_element(self._STATE_OF_CUBE[2][n][n])],
+                         down_color=color_config[self._get_face_by_element(self._STATE_OF_CUBE[5][0][n])],
+                         right_number=self.__right_num,
+                         front_number=self.__front_num,
+                         down_number=self.__down_num)
+
+        self.__set_and_reset_nums(numbers, left_num=self._STATE_OF_CUBE[1][0][0],
+                                  up_num=self._STATE_OF_CUBE[0][0][0],
+                                  back_num=self._STATE_OF_CUBE[4][n][0])
+
+        self.__add_cubie(plotter, center=(-half, -half, half),
+                         left_color=color_config[self._get_face_by_element(self._STATE_OF_CUBE[1][0][0])],
+                         up_color=color_config[self._get_face_by_element(self._STATE_OF_CUBE[0][0][0])],
+                         back_color=color_config[self._get_face_by_element(self._STATE_OF_CUBE[4][0][n])],
+                         left_number=self.__left_num,
+                         up_number=self.__up_num,
+                         back_number=self.__back_num)
+
+        self.__set_and_reset_nums(numbers, up_num=self._STATE_OF_CUBE[0][0][n],
+                                  right_num=self._STATE_OF_CUBE[3][0][n],
+                                  back_num=self._STATE_OF_CUBE[4][n][n])
+
+        self.__add_cubie(plotter, center=(-half, half, half),
+                         up_color=color_config[self._get_face_by_element(self._STATE_OF_CUBE[0][0][n])],
+                         right_color=color_config[self._get_face_by_element(self._STATE_OF_CUBE[3][0][n])],
+                         back_color=color_config[self._get_face_by_element(self._STATE_OF_CUBE[4][0][0])],
+                         up_number=self.__up_num,
+                         right_number=self.__right_num,
+                         back_number=self.__back_num)
+
+        self.__set_and_reset_nums(numbers, right_num=self._STATE_OF_CUBE[3][n][n],
+                                  back_num=self._STATE_OF_CUBE[4][0][n],
+                                  down_num=self._STATE_OF_CUBE[5][n][n])
+
+        self.__add_cubie(plotter, center=(-half, half, -half),
+                         right_color=color_config[self._get_face_by_element(self._STATE_OF_CUBE[3][n][n])],
+                         back_color=color_config[self._get_face_by_element(self._STATE_OF_CUBE[4][n][0])],
+                         down_color=color_config[self._get_face_by_element(self._STATE_OF_CUBE[5][n][n])],
+                         right_number=self.__right_num,
+                         back_number=self.__back_num,
+                         down_number=self.__down_num)
+
+        self.__set_and_reset_nums(numbers, left_num=self._STATE_OF_CUBE[1][n][0],
+                                  down_num=self._STATE_OF_CUBE[5][n][0],
+                                  back_num=self._STATE_OF_CUBE[4][0][0])
+
+        self.__add_cubie(plotter, center=(-half, -half, -half),
+                         left_color=color_config[self._get_face_by_element(self._STATE_OF_CUBE[1][n][0])],
+                         down_color=color_config[self._get_face_by_element(self._STATE_OF_CUBE[5][n][0])],
+                         back_color=color_config[self._get_face_by_element(self._STATE_OF_CUBE[4][n][n])],
+                         left_number=self.__left_num,
+                         down_number=self.__down_num,
+                         back_number=self.__back_num)
+
+    def __plot_3dcube_y_axis_angles(self, plotter, color_config, numbers: bool):
+        half = self.CENTER_3DCUBE_SIZE / 2
+        n = self._SIZE_OF_CUBE - 1
+        index = 1
+        for y_axis in np.arange(-half + 1 + self.GAP_SIZE, half, 1+self.GAP_SIZE):
+
+            self.__set_and_reset_nums(numbers, front_num=self._STATE_OF_CUBE[2][0][index],
+                                      up_num=self._STATE_OF_CUBE[0][n][index])
+
+            self.__add_cubie(plotter, center=(half, y_axis, half),
+                             front_color=color_config[self._get_face_by_element(self._STATE_OF_CUBE[2][0][index])],
+                             up_color=color_config[self._get_face_by_element(self._STATE_OF_CUBE[0][n][index])],
+                             front_number=self.__front_num,
+                             up_number=self.__up_num)
+
+            self.__set_and_reset_nums(numbers, front_num=self._STATE_OF_CUBE[2][n][index],
+                                      down_num=self._STATE_OF_CUBE[5][0][index])
+
+            self.__add_cubie(plotter, center=(half, y_axis, -half),
+                             front_color=color_config[self._get_face_by_element(self._STATE_OF_CUBE[2][n][index])],
+                             down_color=color_config[self._get_face_by_element(self._STATE_OF_CUBE[5][0][index])],
+                             front_number=self.__front_num,
+                             down_number=self.__down_num)
+
+            self.__set_and_reset_nums(numbers, up_num=self._STATE_OF_CUBE[0][0][index],
+                                      back_num=self._STATE_OF_CUBE[4][n][index])
+
+            self.__add_cubie(plotter, center=(-half, y_axis, half),
+                             up_color=color_config[self._get_face_by_element(self._STATE_OF_CUBE[0][0][index])],
+                             back_color=color_config[self._get_face_by_element(self._STATE_OF_CUBE[4][0][n - index])],
+                             up_number=self.__up_num,
+                             back_number=self.__back_num)
+
+            self.__set_and_reset_nums(numbers, down_num=self._STATE_OF_CUBE[5][n][index],
+                                      back_num=self._STATE_OF_CUBE[4][0][index])
+
+            self.__add_cubie(plotter, center=(-half, y_axis, -half),
+                             down_color=color_config[self._get_face_by_element(self._STATE_OF_CUBE[5][n][index])],
+                             back_color=color_config[self._get_face_by_element(self._STATE_OF_CUBE[4][n][n - index])],
+                             down_number=self.__down_num,
+                             back_number=self.__back_num)
+            index += 1
+
+    def __plot_3dcube_x_axis_angles(self, plotter, color_config, numbers: bool):
+        half = self.CENTER_3DCUBE_SIZE / 2
+        n = self._SIZE_OF_CUBE - 1
+        index = 1
+        for x_axis in np.arange(-half + 1 + self.GAP_SIZE, half, 1 + self.GAP_SIZE):
+            self.__set_and_reset_nums(numbers, up_num=self._STATE_OF_CUBE[0][index][n],
+                                      right_num=self._STATE_OF_CUBE[3][0][n - index])
+
+            self.__add_cubie(plotter, center=(x_axis, half, half),
+                             up_color=color_config[self._get_face_by_element(self._STATE_OF_CUBE[0][index][n])],
+                             right_color=color_config[self._get_face_by_element(self._STATE_OF_CUBE[3][0][n - index])],
+                             up_number=self.__up_num, right_number=self.__right_num)
+
+            self.__set_and_reset_nums(numbers, down_num=self._STATE_OF_CUBE[5][n - index][n],
+                                      right_num=self._STATE_OF_CUBE[3][n][n - index])
+
+            self.__add_cubie(plotter, center=(x_axis, half, -half),
+                             down_color=color_config[self._get_face_by_element(self._STATE_OF_CUBE[5][n - index][n])],
+                             right_color=color_config[self._get_face_by_element(self._STATE_OF_CUBE[3][n][n - index])],
+                             down_number=self.__down_num, right_number=self.__right_num)
+
+            self.__set_and_reset_nums(numbers, up_num=self._STATE_OF_CUBE[0][index][0],
+                                      left_num=self._STATE_OF_CUBE[1][0][index])
+
+            self.__add_cubie(plotter, center=(x_axis, -half, half),
+                             up_color=color_config[self._get_face_by_element(self._STATE_OF_CUBE[0][index][0])],
+                             left_color=color_config[self._get_face_by_element(self._STATE_OF_CUBE[1][0][index])],
+                             up_number=self.__up_num, left_number=self.__left_num)
+
+            self.__set_and_reset_nums(numbers, left_num=self._STATE_OF_CUBE[1][n][index],
+                                      down_num=self._STATE_OF_CUBE[5][n - index][0])
+
+            self.__add_cubie(plotter, center=(x_axis, -half, -half),
+                             left_color=color_config[self._get_face_by_element(self._STATE_OF_CUBE[1][n][index])],
+                             down_color=color_config[self._get_face_by_element(self._STATE_OF_CUBE[5][n - index][0])],
+                             left_number=self.__left_num, down_number=self.__down_num)
+
+            index += 1
+
+
+    def __plot_3dcube_z_axis_angles(self, plotter, color_config, numbers: bool):
+        half = self.CENTER_3DCUBE_SIZE / 2
+        n = self._SIZE_OF_CUBE - 1
+        index = 1
+        for z_axis in np.arange(half - 1 - self.GAP_SIZE, -half, -1 - self.GAP_SIZE):
+
+            self.__set_and_reset_nums(numbers, front_num=self._STATE_OF_CUBE[2][index][n],
+                                      right_num=self._STATE_OF_CUBE[3][index][0])
+
+            self.__add_cubie(plotter, center=(half, half, z_axis),
+                             front_color=color_config[self._get_face_by_element(self._STATE_OF_CUBE[2][index][n])],
+                             right_color=color_config[self._get_face_by_element(self._STATE_OF_CUBE[3][index][0])],
+                             front_number=self.__front_num, right_number=self.__right_num)
+
+            self.__set_and_reset_nums(numbers, front_num=self._STATE_OF_CUBE[2][index][0],
+                                      left_num=self._STATE_OF_CUBE[1][index][n])
+
+            self.__add_cubie(plotter, center=(half, -half, z_axis),
+                             front_color=color_config[self._get_face_by_element(self._STATE_OF_CUBE[2][index][0])],
+                             left_color=color_config[self._get_face_by_element(self._STATE_OF_CUBE[1][index][n])],
+                             front_number=self.__front_num, left_number=self.__left_num)
+
+            self.__set_and_reset_nums(numbers, right_num=self._STATE_OF_CUBE[3][index][n],
+                                      back_num=self._STATE_OF_CUBE[4][n-index][n])
+
+            self.__add_cubie(plotter, center=(-half, half, z_axis),
+                             right_color=color_config[self._get_face_by_element(self._STATE_OF_CUBE[3][index][n])],
+                             back_color=color_config[self._get_face_by_element(self._STATE_OF_CUBE[4][index][0])],
+                             right_number=self.__right_num, back_number=self.__back_num)
+
+            self.__set_and_reset_nums(numbers, back_num=self._STATE_OF_CUBE[4][n-index][0],
+                                      left_num=self._STATE_OF_CUBE[1][index][0])
+
+            self.__add_cubie(plotter, center=(-half, -half, z_axis),
+                             back_color=color_config[self._get_face_by_element(self._STATE_OF_CUBE[4][index][n])],
+                             left_color=color_config[self._get_face_by_element(self._STATE_OF_CUBE[1][index][0])],
+                             back_number=self.__back_num, left_number=self.__left_num)
+
+            index += 1
+
+
+    def __plot_3dcube_x_axis_centers(self, plotter, color_config, numbers: bool):
+        half = self.CENTER_3DCUBE_SIZE / 2
+        n = self._SIZE_OF_CUBE - 1
+        row = 1
+        for z_axis in np.arange(half - 1 - self.GAP_SIZE, -half, -1 - self.GAP_SIZE):
+            col = 1
+            for y_axis in np.arange(-half + 1 + self.GAP_SIZE, half, 1 + self.GAP_SIZE):
+
+                self.__set_and_reset_nums(numbers, front_num=self._STATE_OF_CUBE[2][row][col])
+
+                self.__add_cubie(plotter, center=(half, y_axis, z_axis),
+                                 front_color=color_config[self._get_face_by_element(self._STATE_OF_CUBE[2][row][col])],
+                                 front_number=self.__front_num)
+
+                self.__set_and_reset_nums(numbers, back_num=self._STATE_OF_CUBE[4][n-row][col])
+
+                self.__add_cubie(plotter, center=(-half, y_axis, z_axis),
+                                 back_color=color_config[self._get_face_by_element(self._STATE_OF_CUBE[4][row][n - col])],
+                                 back_number=self.__back_num)
+
+                col += 1
+            row += 1
+
+    def __plot_3dcube_y_axis_centers(self, plotter, color_config, numbers: bool):
+        half = self.CENTER_3DCUBE_SIZE / 2
+        n = self._SIZE_OF_CUBE - 1
+        row = 1
+        for z_axis in np.arange(half - 1 - self.GAP_SIZE, -half, -1 - self.GAP_SIZE):
+            col = 1
+            for x_axis in np.arange(-half + 1 + self.GAP_SIZE, half, 1 + self.GAP_SIZE):
+
+                self.__set_and_reset_nums(numbers, right_num=self._STATE_OF_CUBE[3][row][n - col])
+
+                self.__add_cubie(plotter, center=(x_axis, half, z_axis),
+                                 right_color=color_config[self._get_face_by_element(self._STATE_OF_CUBE[3][row][n - col])],
+                                 right_number=self.__right_num)
+
+                self.__set_and_reset_nums(numbers, left_num=self._STATE_OF_CUBE[1][row][col])
+
+                self.__add_cubie(plotter, center=(x_axis, -half, z_axis),
+                                 left_color=color_config[self._get_face_by_element(self._STATE_OF_CUBE[1][row][col])],
+                                 left_number=self.__left_num)
+
+                col += 1
+            row += 1
+
+
+    def __plot_3dcube_z_axis_centers(self, plotter, color_config, numbers: bool):
+        half = self.CENTER_3DCUBE_SIZE / 2
+        n = self._SIZE_OF_CUBE - 1
+        row = 1
+        for x_axis in np.arange(-half + 1 + self.GAP_SIZE, half, 1 + self.GAP_SIZE):
+            col = 1
+            for y_axis in np.arange(-half + 1 + self.GAP_SIZE, half, 1 + self.GAP_SIZE):
+
+                self.__set_and_reset_nums(numbers, up_num=self._STATE_OF_CUBE[0][row][col])
+
+                self.__add_cubie(plotter, center=(x_axis, y_axis, half),
+                                 up_color=color_config[self._get_face_by_element(self._STATE_OF_CUBE[0][row][col])],
+                                 up_number=self.__up_num)
+
+                self.__set_and_reset_nums(numbers, down_num=self._STATE_OF_CUBE[5][n - row][col])
+
+                self.__add_cubie(plotter, center=(x_axis, y_axis, -half),
+                                 down_color=color_config[self._get_face_by_element(self._STATE_OF_CUBE[5][n - row][col])],
+                                 down_number=self.__down_num)
+
+                col += 1
+            row += 1
+
 
