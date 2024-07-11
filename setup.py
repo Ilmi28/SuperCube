@@ -9,7 +9,7 @@ project_urls = {
 
 setup(
     name="super-rubik-cube",
-    version="1.0.5",
+    version="1.0.52",
     author="Ilmi28",
     author_email="<ilmialiev28@gmail.com>",
     description=DESCRIPTION,
@@ -18,7 +18,7 @@ setup(
     package_data={'supercube': ['kociemba/pykociemba/prunetables/*']},
     packages=find_packages(),
     keywords=['python', 'rubik', 'cube', 'solve', '3x3', '2x2', "rubik's cube", 'pocket cube', 'NxN', 'kociemba', 'supercube', 'solver', '3D', 'jupyter'],
-    install_requires=['pyvista[jupyter]==0.43.10', 'numpy==2.0.0'],
+    install_requires=['pyvista[jupyter]==0.43.10', 'numpy<2'],
     project_urls=project_urls,
     license='GPL-3.0'
 )
